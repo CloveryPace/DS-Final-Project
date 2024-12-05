@@ -1,0 +1,47 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
+  
+  websocket_server:
+    build:
+      context: .
+    container_name: websocket_container
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis_container
+    ports:
+      - "6789:6789"
+    networks:
+      - my_network
+  
+  # frontend:
+  #   image: nginx:alpine
+  #   container_name: frontend_container
+  #   volumes:
+  #     - ./index.html:/usr/share/nginx/html/index.html
+  #     - ./main.js:/usr/share/nginx/html/main.js
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #     - my_network
+  #   depends_on:
+  #     - websocket_server
+  frontend:
+    build:
+      context: ./frontend  # 這裡指定 React 應用的目錄
+    container_name: frontend_container
+    ports:
+      - "3000:3000"  # 這裡將容器內的 3000 埠映射到宿主機的 3000 埠
+    depends_on:
+      - websocket_server
+    networks:
+      - my_network
+networks:
+  my_network:
+    driver: bridge
