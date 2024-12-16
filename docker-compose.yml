@@ -1,47 +1,52 @@
+version: "3.8"
+
 services:
+  backend:
+    build: ./backend
+    container_name: flask_backend
+    ports:
+      - "5001:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/team_event
+      - REDIS_URI=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./backend:/app
+    command: python app.py
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+    stdin_open: true
+    tty: true
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./database/init_mongo.js:/docker-entrypoint-initdb.d/init_mongo.js
+      - mongo_data:/data/db
+
   redis:
     image: redis:latest
-    container_name: redis_container
+    container_name: redis_cache
     ports:
       - "6379:6379"
-    networks:
-      - my_network
-  
-  websocket_server:
-    build:
-      context: .
-    container_name: websocket_container
-    depends_on:
-      - redis
-    environment:
-      - REDIS_HOST=redis_container
-    ports:
-      - "6789:6789"
-    networks:
-      - my_network
-  
-  # frontend:
-  #   image: nginx:alpine
-  #   container_name: frontend_container
-  #   volumes:
-  #     - ./index.html:/usr/share/nginx/html/index.html
-  #     - ./main.js:/usr/share/nginx/html/main.js
-  #   ports:
-  #     - "8080:80"
-  #   networks:
-  #     - my_network
-  #   depends_on:
-  #     - websocket_server
-  frontend:
-    build:
-      context: ./frontend  # 這裡指定 React 應用的目錄
-    container_name: frontend_container
-    ports:
-      - "3000:3000"  # 這裡將容器內的 3000 埠映射到宿主機的 3000 埠
-    depends_on:
-      - websocket_server
-    networks:
-      - my_network
-networks:
-  my_network:
-    driver: bridge
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+volumes:
+  mongo_data:
+  redis_data:

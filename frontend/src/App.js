@@ -1,52 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import Auth from './components/Auth';
+import TeamRegistration from './components/TeamRegistration';
+import UploadPost from './components/UploadPost';
+import RankingBoard from './components/RankingBoard';
 
 function App() {
-	const [rankings, setRankings] = useState([]); // 保存排名數據
+    return (
+        <div className="App">
+            <h1>Team Check-in Competition</h1>
+            {/* 登入與註冊 */}
+            <Auth />
 
-	useEffect(() => {
-		// 創建 WebSocket 連接
-		const socket = new WebSocket('ws://websocket_server:6789'); // 使用 WebSocket 服務名稱
+            <hr />
 
-		socket.onopen = () => {
-			console.log('WebSocket connection established.');
-		};
+            {/* 團隊註冊與加入 */}
+            <TeamRegistration />
 
-		socket.onmessage = (event) => {
-			// 假設 WebSocket 發送的數據是 JSON 格式的積分排名
-			const data = JSON.parse(event.data);
-			setRankings(data); // 更新積分排名數據
-		};
+            <hr />
 
-		socket.onerror = (error) => {
-			console.error('WebSocket error:', error);
-		};
+            {/* 上傳打卡照片 */}
+            <UploadPost />
 
-		socket.onclose = () => {
-			console.log('WebSocket connection closed.');
-		};
+            <hr />
 
-		// 清理 WebSocket 連接
-		return () => {
-			socket.close();
-		};
-	}, []); // 空依賴陣列表示這個 effect 只會在組件掛載時執行一次
-
-	return (
-		<div className="App">
-			<h1>團隊積分排名</h1>
-			{rankings.length === 0 ? (
-				<p>等待積分排名更新...</p>
-			) : (
-				<ul>
-					{rankings.map((team, index) => (
-						<li key={index}>
-							{team.team_id}: {team.score} 分
-						</li>
-					))}
-				</ul>
-			)}
-		</div>
-	);
+            {/* 即時排名看板 */}
+            <RankingBoard />
+        </div>
+    );
 }
 
 export default App;
