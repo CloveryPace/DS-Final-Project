@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "https://localhost:5001/auth";
+
+const API_URL = 'http://localhost:5001/api/auth';
 
 // 登入 API
 const login = (email, password) => {

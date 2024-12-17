@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://localhost:5001/teams";
+const API_URL = 'http://localhost:5001/api/team';
 
 // 獲取所有團隊列表
 const getTeams = () => {
