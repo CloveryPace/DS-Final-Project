@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://localhost:5000/posts';
+const API_URL = 'https://localhost:5001/posts';
 
 // 上傳打卡照片
 const uploadPost = (formData) => {
