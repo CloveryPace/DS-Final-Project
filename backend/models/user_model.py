@@ -11,15 +11,18 @@ class UserModel:
             "email": email,
             "password_hash": password_hash,
             "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
+            "posted_at": None
         }
         return self.collection.insert_one(user)
-
-    def find_user_by_email(self, email):
-        return self.collection.find_one({"email": email})
-
-    def update_user_password(self, email, new_password_hash):
+    
+    def update_posted_at(self, username, posted_time):
         return self.collection.update_one(
-            {"email": email},
-            {"$set": {"password_hash": new_password_hash, "updated_at": datetime.utcnow()}}
+            {"username": username},
+            {"$set": {"posted_at": posted_time}}
         )
+    
+    def get_user(self, username):
+        return self.collection.find_one({"username": username})
+    
+    def get_email(self, email):
+        return self.collection.find_one({"email": email})
