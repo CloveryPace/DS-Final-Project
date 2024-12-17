@@ -44,7 +44,7 @@ def update_score():
         leaderboard_key, 0, 19, withscores=True)
 
     # 比較舊排行榜和新排行榜
-    if old_top_teams != new_top_teams:
+    if old_top_teams != new_top_teams or True:
         # 如果排行榜有變化，發布到 Redis Pub/Sub channel
         leaderboard = [{"team": team, "score": score}
                        for team, score in new_top_teams]

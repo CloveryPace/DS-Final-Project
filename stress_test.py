@@ -3,11 +3,12 @@ import aiohttp
 import random
 
 # 目標 API 端點
-url = 'http://localhost:5000/update_score'
+url = 'http://localhost:5002/update_score'
 
+num_team = 1000
 # 要發送的 POST 請求的資料
 data_list = [{'team_name': f'Team {i}',
-              'score': random.randint(1, 10000)} for i in range(1, 10001)]
+              'score': random.randint(1, num_team)} for i in range(1, num_team + 1)]
 
 # 非同步發送 POST 請求的函數
 
