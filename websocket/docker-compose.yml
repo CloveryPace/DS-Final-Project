@@ -1,0 +1,17 @@
+services:
+  websocket:
+    build: .
+    image: websockeet:latest
+    container_name: websocket
+    ports:
+      - "5000:5000"
+    command: python app.py
+  redis:
+    image: redis:latest
+    container_name: redis
+    # volumes:
+      # - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+      # - redis-data:/data  # 將 Redis 數據持久化
+    # command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6379:6379"

@@ -46,7 +46,14 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
       - redis_data:/data
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-
+  
+  websocket:
+    build: ./websocket
+    image: websocket:latest
+    container_name: websocket
+    ports:
+      - "5002:5000"
+    command: python app.py
 volumes:
   mongo_data:
   redis_data:
