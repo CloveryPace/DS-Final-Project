@@ -1,32 +1,25 @@
-import React from 'react';
-import Auth from './components/Auth';
-import TeamRegistration from './components/TeamRegistration';
-import UploadPost from './components/UploadPost';
-import RankingBoard from './components/RankingBoard';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./components/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage from "./pages/HomePage";
+import RankingPage from "./pages/RankingPage";
 
 function App() {
-    return (
-        <div className="App">
-            <h1>Team Check-in Competition</h1>
-            {/* 登入與註冊 */}
-            <Auth />
-
-            <hr />
-
-            {/* 團隊註冊與加入 */}
-            <TeamRegistration />
-
-            <hr />
-
-            {/* 上傳打卡照片 */}
-            <UploadPost />
-
-            <hr />
-
-            {/* 即時排名看板 */}
-            <RankingBoard />
-        </div>
-    );
+  return (
+    <Router>
+      <div>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/home" element={<HomePage username="user123" />} />
+          <Route path="/ranking" element={<RankingPage />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
 export default App;
