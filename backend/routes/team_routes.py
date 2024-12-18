@@ -2,12 +2,12 @@ from flask import Blueprint, request, jsonify
 from models.user_model import UserModel
 from models.team_model import TeamModel
 from models.userteam_model import UserTeamModel
-from config.config import db
+from config.config import get_postgres_connection
 
 team_bp = Blueprint('team', __name__)
-user_model = UserModel(db)
-team_model = TeamModel(db)
-userteam_model = UserTeamModel(db)
+user_model = UserModel(get_postgres_connection)
+team_model = TeamModel(get_postgres_connection)
+userteam_model = UserTeamModel(get_postgres_connection)
 
 @team_bp.route('/create', methods=['POST'])
 def create_team():

@@ -9,9 +9,8 @@ from config.config import Config
 from services.redis_service import RedisService
 
 app = Flask(__name__)
-app.config.from_object(Config)
-
 CORS(app)
+app.config.from_object(Config)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 

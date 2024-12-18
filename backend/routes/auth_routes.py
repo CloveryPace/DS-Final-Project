@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 from models.user_model import UserModel
-from config.config import db
+from config.config import get_postgres_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
-user_model = UserModel(db)
+user_model = UserModel(get_postgres_connection)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -16,7 +16,10 @@ def register():
         return jsonify({"error": "User already exists"}), 409
 
     password_hash = generate_password_hash(data['password'])
-    user_model.create_user(data['username'], data['email'], password_hash)
+    result = user_model.create_user(data['username'], data['email'], password_hash)
+    if "error" in result:
+        return jsonify({"error": result["error"]}), 500
+
     return jsonify({"message": "User registered successfully"}), 201
 
 @auth_bp.route('/login', methods=['POST'])

@@ -1,14 +1,14 @@
 from flask import Blueprint, request, jsonify
 from models.user_model import UserModel
 from services.score_service import ScoreService
-from config.config import db
+from config.config import get_postgres_connection
 from datetime import datetime
 
 score_bp = Blueprint('score', __name__)
 
-user_model = UserModel(db)
+user_model = UserModel(get_postgres_connection)
 ACTIVITY_START_TIME = datetime(2024, 6, 1, 0, 0, 0)
-score_service = ScoreService(db, activity_start_time=ACTIVITY_START_TIME, alpha=2, beta=3)
+score_service = ScoreService(activity_start_time=ACTIVITY_START_TIME, alpha=2, beta=3)
 
 @score_bp.route('/update', methods=['POST'])
 def update_posted_at():
