@@ -27,19 +27,22 @@ def get_all_teams():
 @team_bp.route('/', methods=['POST'])
 def create_team():
     data = request.json
-    if not data.get('team_name'):
-        return jsonify({"error": "Team name is required"}), 400
+    if not data.get('team_name') or not data.get('username'):
+        return jsonify({"error": "Team name and Username are required"}), 400
 
+    team_name = data['team_name']
+    username = data['username']
     try:
-        existing_team = team_model.get_team_by_name(data['team_name'])
+        existing_team = team_model.get_team_by_name(team_name)
     except Exception as e:
         return jsonify({"error": f"An error occurred while checking for existing team: {str(e)}"}), 500
 
     if existing_team:
-        return jsonify({"error": f"Team '{data['team_name']}' already exists"}), 409
+        return jsonify({"error": f"Team '{team_name}' already exists"}), 409
 
     try:
-        response = team_model.create_team(data['team_name'])
+        response = team_model.create_team(team_name)
+        userteam_model.add_user_to_team(team_name, username)
     except Exception as e:
         return jsonify({"error": f"An error occurred while creating the team: {str(e)}"}), 500
 
@@ -64,7 +67,6 @@ def add_member(team_name):
     userteam_model.add_user_to_team(team_name, data['username'])
     try:
         teams = userteam_model.get_teams_by_user(username)
-        print(teams)
         for team in teams:
             score_service.calculate_team_score(team["team_name"])
     except Exception as e:
