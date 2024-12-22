@@ -49,13 +49,16 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
+    if not data or not data.get('username') or not data.get('password'):
+        return jsonify({"error": "Username and password are required"}), 400
+
     try:
-        user = user_model.get_user_by_email(data.get('email'))
+        user = user_model.get_user_by_username(data.get('username'))
     except Exception as e:
         raise e
 
     if not user or not check_password_hash(user['password_hash'], data['password']):
-        return jsonify({"error": "Invalid email or password"}), 401
+        return jsonify({"error": "Invalid username or password"}), 401
 
     return jsonify({"message": "Login successful", "user": user}), 200
 

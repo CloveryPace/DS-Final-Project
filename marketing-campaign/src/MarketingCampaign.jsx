@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -129,7 +129,7 @@ const MarketingCampaign = () => {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					email: formData.email,
+					username: formData.username,
 					password: formData.password,
 				}),
 			});
@@ -155,6 +155,7 @@ const MarketingCampaign = () => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					team_name: formData.teamName,
+					username: user.username,
 				}),
 			});
 
