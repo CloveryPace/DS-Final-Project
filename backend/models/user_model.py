@@ -2,28 +2,58 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
+
 class UserModel:
     def __init__(self, connection_func):
         self.connection = connection_func
 
-    def create_user(self, username, email, password_hash):
         try:
-            with self.connection as conn:
+            with self.connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
+                        """
+                    CREATE TABLE IF NOT EXISTS users (
+                        id SERIAL PRIMARY KEY,
+                        username VARCHAR(255) UNIQUE NOT NULL,
+                        email VARCHAR(255) UNIQUE NOT NULL,
+                        password_hash VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP NOT NULL,
+                        posted_at TIMESTAMP
+                    );
+                    """
+                    )
+                    conn.commit()
+        except Exception as e:
+            raise RuntimeError(f"Error creating users table: {str(e)}")
+
+    def create_user(self, username, email, password_hash):
+        try:
+            with self.connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO users (username, email, password_hash, created_at, posted_at)
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING id;
+                        """,
                         (username, email, password_hash, datetime.utcnow(), None)
                     )
                     user_id = cursor.fetchone()[0]
                     conn.commit()
-                    return {"message": "User created successfully", "user_id": user_id}
+                    return {
+                        "message": "User created successfully",
+                        "user_id": user_id,
+                        "username": username,
+                        "email": email
+                    }
         except psycopg2.IntegrityError:
-            return {"error": "Username or email already exists"}
+            raise ValueError("Username or email already exists")
         except Exception as e:
-            return {"error": str(e)}
+            raise RuntimeError(f"Database error: {str(e)}")
 
     def update_posted_at(self, username, posted_time):
         try:
-            with self.connection as conn:
+            with self.connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
@@ -36,32 +66,42 @@ class UserModel:
                     )
                     updated_row = cursor.rowcount
                     conn.commit()
-                    return {"message": "Posted time updated successfully"} if updated_row else {"error": "User not found"}
+                    return {"message": "Posted time updated successfully"}
         except Exception as e:
-            return {"error": str(e)}
+            raise RuntimeError(f"Database error: {str(e)}")
 
-    def get_user(self, username):
+    def get_user_by_username(self, username):
         try:
-            with self.connection as conn:
+            with self.connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute(
                         "SELECT * FROM users WHERE username = %s;",
                         (username,)
                     )
                     user = cursor.fetchone()
-                    return user if user else {"error": "User not found"}
+                    return user
         except Exception as e:
-            return {"error": str(e)}
+            raise RuntimeError(f"Database error: {str(e)}")
 
-    def get_email(self, email):
+    def get_user_by_email(self, email):
         try:
-            with self.connection as conn:
+            with self.connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute(
                         "SELECT * FROM users WHERE email = %s;",
                         (email,)
                     )
                     user = cursor.fetchone()
-                    return user if user else {"error": "Email not found"}
+                    return user
         except Exception as e:
-            return {"error": str(e)}
+            raise RuntimeError(f"Database error: {str(e)}")
+
+    def get_all_users(self):
+        try:
+            with self.connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute("SELECT * FROM users;")
+                    users = cursor.fetchall()
+                    return users
+        except Exception as e:
+            raise RuntimeError(f"Database error: {str(e)}")

@@ -1,10 +1,28 @@
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
+from models.userteam_model import UserTeamModel
 from models.user_model import UserModel
 from config.config import get_postgres_connection
 from werkzeug.security import generate_password_hash, check_password_hash
+from services.score_service import ScoreService
+from extension import socketio
 
 auth_bp = Blueprint('auth', __name__)
 user_model = UserModel(get_postgres_connection)
+userteam_model = UserTeamModel(get_postgres_connection)
+
+ACTIVITY_START_TIME = datetime(2024, 6, 1, 0, 0, 0)
+score_service = ScoreService(ACTIVITY_START_TIME)
+
+
+@auth_bp.route('/', methods=['GET'])
+def get_all_users():
+    try:
+        users = user_model.get_all_users()
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -12,22 +30,68 @@ def register():
     if not data or not data.get('username') or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Username, email and password are required"}), 400
 
-    if user_model.get_email(data['email']):
-        return jsonify({"error": "User already exists"}), 409
+    try:
+        password_hash = generate_password_hash(data['password'])
+        result = user_model.create_user(
+            data['username'], data['email'], password_hash)
+        return jsonify(result), 201
+    except ValueError as e:
+        # 處理用戶已存在的錯誤
+        return jsonify({"error": str(e)}), 409
+    except RuntimeError as e:
+        # 處理資料庫異常
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        # 捕捉其他未知錯誤
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
-    password_hash = generate_password_hash(data['password'])
-    result = user_model.create_user(data['username'], data['email'], password_hash)
-    if "error" in result:
-        return jsonify({"error": result["error"]}), 500
-
-    return jsonify({"message": "User registered successfully"}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
-    user = user_model.get_email(data.get('email'))
+    try:
+        user = user_model.get_user_by_email(data.get('email'))
+    except Exception as e:
+        raise e
 
     if not user or not check_password_hash(user['password_hash'], data['password']):
         return jsonify({"error": "Invalid email or password"}), 401
 
-    return jsonify({"message": "Login successful", "user": user['email']}), 200
+    return jsonify({"message": "Login successful", "user": user}), 200
+
+
+@auth_bp.route('/post', methods=['POST'])
+def update_posted_at():
+    data = request.json
+    if not data or not data.get("username"):
+        return jsonify({"error": "Username is required"}), 400
+
+    posted_time = datetime.now(timezone.utc)
+    username = data.get("username")
+    try:
+        user_model.update_posted_at(username, posted_time)
+        # return jsonify({
+        #     "message": f"{result["message"]}",
+        #     "posted_at": posted_time.isoformat()
+        # }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        teams = userteam_model.get_teams_by_user(username)
+        print(teams)
+        for team in teams:
+            score_service.calculate_team_score(team["team_name"])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        top_teams = userteam_model.get_top_teams()
+        socketio.emit('update_leaderboard', top_teams)
+        print(f"{top_teams} emitted")
+        return jsonify(top_teams), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    # if result.matched_count == 0:
+    #     return jsonify({"error": f"User '{data['username']}' not found"}), 404
