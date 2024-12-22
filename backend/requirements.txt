@@ -2,6 +2,7 @@ Flask
 Flask-SocketIO
 Flask-Cors
 psycopg2-binary
-redis
 werkzeug
 python-dotenv
+gunicorn
+eventlet

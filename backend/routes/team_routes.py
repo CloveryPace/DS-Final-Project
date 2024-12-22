@@ -46,7 +46,7 @@ def create_team():
     except Exception as e:
         return jsonify({"error": f"An error occurred while creating the team: {str(e)}"}), 500
 
-    return jsonify({"message": "Team created successfully", "team_id": str(response["team_id"])}), 201
+    return jsonify({"message": "Team created successfully"}), 201
 
 
 @team_bp.route('/<team_name>/members', methods=['POST'])

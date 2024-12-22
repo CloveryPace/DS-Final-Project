@@ -14,10 +14,10 @@ COPY . .
 # 設定環境變數
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=5000
+ENV FLASK_RUN_PORT=8080
 
 # 開放 Flask 和 WebSocket 服務的連接埠
-EXPOSE 5000
+EXPOSE 8080
 
 # 啟動 Flask 應用程式
-CMD ["flask", "run"]
+CMD ["gunicorn", "--worker-class", "eventlet" ,"-w", "1", "-b", "0.0.0.0:8080", "app:app"]

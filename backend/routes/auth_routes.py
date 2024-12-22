@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from models.userteam_model import UserTeamModel
 from models.user_model import UserModel
-from config.config import get_postgres_connection
+from config.config import get_postgres_connection, release_postgres_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from services.score_service import ScoreService
 from extension import socketio
@@ -82,19 +82,10 @@ def update_posted_at():
 
     try:
         teams = userteam_model.get_teams_by_user(username)
-        print(teams)
         for team in teams:
             score_service.calculate_team_score(team["team_name"])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    try:
         top_teams = userteam_model.get_top_teams()
         socketio.emit('update_leaderboard', top_teams)
-        print(f"{top_teams} emitted")
-        return jsonify(top_teams), 200
+        return jsonify({"message": f"{username} updated post!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    # if result.matched_count == 0:
-    #     return jsonify({"error": f"User '{data['username']}' not found"}), 404

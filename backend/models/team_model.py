@@ -27,9 +27,9 @@ class TeamModel:
                         "INSERT INTO teams (team_name) VALUES (%s) RETURNING id;",
                         (team_name,)
                     )
-                    team_id = cursor.fetchone()[0]
+                    team = cursor.fetchone()
                     conn.commit()
-                    return {"message": "Team created successfully", "team_id": team_id}
+                    return {"message": "Team created successfully", "team": team}
         except psycopg2.IntegrityError:
             raise ValueError(f"Team '{team_name}' already exists")
         except Exception as e:

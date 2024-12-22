@@ -2,7 +2,7 @@ from datetime import datetime
 from models.user_model import UserModel
 from models.team_model import TeamModel
 from models.userteam_model import UserTeamModel
-from config.config import get_postgres_connection, redis_client
+from config.config import get_postgres_connection
 
 
 class ScoreService:
@@ -13,7 +13,7 @@ class ScoreService:
         self.activity_start_time = activity_start_time
         self.alpha = alpha
         self.beta = beta
-        self.redis_client = redis_client
+        # self.redis_client = redis_client
         self.leaderboard_key = "team_scores"
 
     def calculate_team_score(self, team_name):
