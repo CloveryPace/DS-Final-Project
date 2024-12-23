@@ -6,3 +6,4 @@ python-dotenv
 gunicorn
 eventlet
 Flask-SQLAlchemy
+psycopg2-binary

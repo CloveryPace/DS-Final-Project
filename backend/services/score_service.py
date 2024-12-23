@@ -26,15 +26,17 @@ class ScoreService:
         # if not users_in_team:
         #     raise Exception("Team not found or has no members")
 
-        users_with_null_posted_at = [
-            user for user in users_in_team if user.get("posted_at") is None]
-        if len(users_with_null_posted_at) > 0:
-            return {"score": 0, "message": "Some users have not checked in"}
+        # users_with_null_posted_at = [
+        #     user for user in users_in_team if user.get("posted_at") is None]
+        # if len(users_with_null_posted_at) > 0:
+        #     return 0
 
+        users_posted = [
+            user for user in users_in_team if user.get("posted_at") is not None]
         checkin_times = []
         N = 0
         T = 0
-        for user_record in users_in_team:
+        for user_record in users_posted:
             username = user_record["username"]
             # user = self.user_model.get_user_by_username(username)
             if user_record and user_record.get("posted_at"):
@@ -63,10 +65,7 @@ class ScoreService:
         score = round((T / (self.alpha *
                             (S + 1))) + (self.beta * N), 5)
 
-        try:
-            self.team_model.update_team_score(team_name, score)
-        except Exception as e:
-            raise Exception(f"Failed to update team score: {str(e)}")
+        return score
         # return {"team_name": team_name, "score": round(score, 5)}
 
     # def update_score_cache(self, score):

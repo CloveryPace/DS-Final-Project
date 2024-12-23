@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserCircle, Upload, Trophy, Users } from 'lucide-react';
-import { socket } from './socket';
+// import { socket } from './socket';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -18,71 +18,30 @@ const MarketingCampaign = () => {
 		password: '',
 		teamName: '',
 	});
-	const [isConnected, setIsConnected] = useState(socket.connected);
+	// const [isConnected, setIsConnected] = useState(socket.connected);
 
 	useEffect(() => {
 		// 載入所有團隊
 		fetchTeams();
-		// 初次載入排行榜
-		// fetchLeaderboard();
 
-		// 設置定期更新排行榜(每5秒)
-		// const intervalId = setInterval(fetchLeaderboard, 5000);
+		const intervalId = setInterval(fetchLeaderboard, 1000);
 
-		// Cleanup interval on component unmount
-		// return () => clearInterval(intervalId);
-		// Establish WebSocket connection
-		function onConnect() {
-			setIsConnected(true);
-		}
-
-		function onDisconnect() {
-			setIsConnected(false);
-		}
-
-		function onUpdateLeaderboard(value) {
-			setTopTeams(value);
-		}
-
-		socket.on('connect', onConnect);
-		socket.on('disconnect', onDisconnect);
-		socket.on('update_leaderboard', onUpdateLeaderboard);
-
-		return () => {
-			socket.off('connect', onConnect);
-			socket.off('disconnect', onDisconnect);
-			socket.off('update_leaderboard', onUpdateLeaderboard);
-		};
-
-		// const socket = new WebSocket('http://localhost:5000');
-
-		// // Handle WebSocket message event
-		// socket.onmessage = (event) => {
-		// 	const data = JSON.parse(event.data);
-		// 	if (data.type === 'update_leaderboard') {
-		// 		setTopTeams(data.topTeams); // Assuming the server sends updated leaderboard data
-		// 	}
-		// };
-
-		// // Cleanup WebSocket on component unmount
-		// return () => {
-		// 	socket.close();
-		// };
+		return () => clearInterval(intervalId);
 	}, []);
 
-	// const fetchLeaderboard = async () => {
-	// 	try {
-	// 		const response = await fetch(`${BASE_URL}/api/leaderboard`, {
-	// 			method: 'GET',
-	// 		});
-	// 		if (response.ok) {
-	// 			const data = await response.json();
-	// 			setTopTeams(data);
-	// 		}
-	// 	} catch (error) {
-	// 		console.error('Error fetching leaderboard:', error);
-	// 	}
-	// };
+	const fetchLeaderboard = async () => {
+		try {
+			const response = await fetch(`${BASE_URL}/api/team/leaderboard`, {
+				method: 'GET',
+			});
+			if (response.ok) {
+				const data = await response.json();
+				setTopTeams(data.leaderboard);
+			}
+		} catch (error) {
+			console.error('Error fetching leaderboard:', error);
+		}
+	};
 
 	const fetchTeams = async () => {
 		try {

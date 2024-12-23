@@ -12,29 +12,41 @@ class Config:
     POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
 
 
-# 初始化連接池
-db_pool = pool.SimpleConnectionPool(
-    1,  # 最小連接數
-    50,  # 最大連接數
-    host=Config.POSTGRES_HOST,
-    port=Config.POSTGRES_PORT,
-    user=Config.POSTGRES_USER,
-    password=Config.POSTGRES_PASSWORD,
-    dbname=Config.POSTGRES_DB,
-)
+# # 初始化連接池
+# db_pool = pool.SimpleConnectionPool(
+#     1,  # 最小連接數
+#     50,  # 最大連接數
+#     host=Config.POSTGRES_HOST,
+#     port=Config.POSTGRES_PORT,
+#     user=Config.POSTGRES_USER,
+#     password=Config.POSTGRES_PASSWORD,
+#     dbname=Config.POSTGRES_DB,
+# )
 
+
+# def get_postgres_connection():
+#     if db_pool:
+#         return db_pool.getconn()  # 從池中獲取連接
+#     else:
+#         raise ConnectionError("Database connection pool is not initialized")
+
+
+# def release_postgres_connection(conn):
+#     if db_pool:
+#         db_pool.putconn(conn)  # 釋放連接回池中
 
 def get_postgres_connection():
-    if db_pool:
-        return db_pool.getconn()  # 從池中獲取連接
-    else:
-        raise ConnectionError("Database connection pool is not initialized")
-
-
-def release_postgres_connection(conn):
-    if db_pool:
-        db_pool.putconn(conn)  # 釋放連接回池中
-
+    try:
+        conn = psycopg2.connect(
+            host=Config.POSTGRES_HOST,
+            port=Config.POSTGRES_PORT,
+            user=Config.POSTGRES_USER,
+            password=Config.POSTGRES_PASSWORD,
+            dbname=Config.POSTGRES_DB
+        )
+        return conn
+    except Exception as e:
+        raise ConnectionError(f"Error connecting to the database: {e}")
 
 # # Redis
 # redis_client = redis.StrictRedis(

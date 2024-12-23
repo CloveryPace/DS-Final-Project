@@ -1,11 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from flask import Blueprint, request, jsonify
-from models.userteam_model import userteam_model
 from models.user_model import user_model
-from config.config import get_postgres_connection, release_postgres_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from services.score_service import ScoreService
-from extension import socketio
 
 auth_bp = Blueprint('auth', __name__)
 # user_model = UserModel(get_postgres_connection)

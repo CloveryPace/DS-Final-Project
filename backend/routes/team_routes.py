@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify
 from models.user_model import user_model
 from models.team_model import team_model
 from models.userteam_model import userteam_model
-from config.config import get_postgres_connection
 from services.score_service import ScoreService
 from extension import socketio
 
@@ -74,7 +73,7 @@ def add_member(team_name):
 
     try:
         top_teams = team_model.get_top_teams()
-        socketio.emit('update_leaderboard', top_teams)
+        # socketio.emit('update_leaderboard', top_teams)
         print(f"{top_teams} emitted")
         return jsonify({"message": f"User '{data['username']}' added to team '{team_name}'"}), 200
         # return jsonify(top_teams), 200
@@ -112,12 +111,18 @@ def update_posted_at(team_name):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    score = score_service.calculate_team_score(team_name)
     try:
-        teams = userteam_model.get_teams_by_user(username)
-        for team in teams:
-            score_service.calculate_team_score(team["team_name"])
-        top_teams = team_model.get_top_teams()
-        socketio.emit('update_leaderboard', top_teams)
-        return jsonify({"message": f"{username} updated post!"}), 200
+        team_model.update_team_score(team_name, score)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        raise Exception(f"Failed to update team score: {str(e)}")
+    return jsonify({"message": f"{username} updated post! {score}"}), 200
+
+
+@team_bp.route('/leaderboard', methods=['GET'])
+def get_leaderboard():
+    try:
+        top_teams = team_model.get_top_teams()
+        return jsonify({"leaderboard": top_teams}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred while fetching the leaderboard: {str(e)}"}), 500
