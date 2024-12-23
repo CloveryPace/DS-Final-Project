@@ -9,8 +9,6 @@ BASE_URL = "https://flask-backend-1043469906200.asia-east1.run.app"  # 定義基
 
 
 class CheckInUser(HttpUser):
-    # wait_time = between(1, 3)  # 每次請求之間的等待時間
-
     def on_start(self):
         """初始化會員資料"""
         username = fake.user_name() + str(random.randint(1000, 9999))
