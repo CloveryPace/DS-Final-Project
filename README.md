@@ -3,6 +3,8 @@
 
 ### How to run
 ```
-docker compose up --build
+cd frontend
+npm install
+npm run dev
 ```
-Open http://localhost:3000 to view frontend page in your browser.
+Open http://localhost:5173 to view frontend page in your browser.
