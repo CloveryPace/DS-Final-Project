@@ -8,7 +8,7 @@ fake = Faker()
 BASE_URL = "https://flask-backend-1043469906200.asia-east1.run.app"  # 定義基礎 URL
 
 
-class CheckInUser(HttpUser):
+class TestUser(HttpUser):
     def on_start(self):
         """初始化會員資料"""
         username = fake.user_name() + str(random.randint(1000, 9999))
