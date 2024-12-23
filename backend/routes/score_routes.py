@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify
-from models.user_model import UserModel
+from models.user_model import user_model
 from services.score_service import ScoreService
 from config.config import get_postgres_connection
 from datetime import datetime, timezone
 
 score_bp = Blueprint('score', __name__)
 
-user_model = UserModel(get_postgres_connection)
+# user_model = UserModel(get_postgres_connection)
 ACTIVITY_START_TIME = datetime(2024, 6, 1, 0, 0, 0)
 score_service = ScoreService(
     activity_start_time=ACTIVITY_START_TIME, alpha=0.01, beta=300)

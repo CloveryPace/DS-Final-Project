@@ -1,16 +1,16 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
-from models.user_model import UserModel
-from models.team_model import TeamModel
-from models.userteam_model import UserTeamModel
+from models.user_model import user_model
+from models.team_model import team_model
+from models.userteam_model import userteam_model
 from config.config import get_postgres_connection
 from services.score_service import ScoreService
 from extension import socketio
 
 team_bp = Blueprint('team', __name__)
-user_model = UserModel(get_postgres_connection)
-team_model = TeamModel(get_postgres_connection)
-userteam_model = UserTeamModel(get_postgres_connection)
+# user_model = UserModel(get_postgres_connection)
+# team_model = TeamModel(get_postgres_connection)
+# userteam_model = UserTeamModel(get_postgres_connection)
 ACTIVITY_START_TIME = datetime(2024, 6, 1, 0, 0, 0)
 score_service = ScoreService(ACTIVITY_START_TIME)
 
@@ -73,7 +73,7 @@ def add_member(team_name):
         return jsonify({"error": str(e)}), 500
 
     try:
-        top_teams = userteam_model.get_top_teams()
+        top_teams = team_model.get_top_teams()
         socketio.emit('update_leaderboard', top_teams)
         print(f"{top_teams} emitted")
         return jsonify({"message": f"User '{data['username']}' added to team '{team_name}'"}), 200
@@ -93,3 +93,31 @@ def get_team_members(team_name):
         return jsonify({"members": members}), 200
     except Exception as e:
         return jsonify({"error": f"An error occurred while fetching team members: {str(e)}"}), 500
+
+
+@team_bp.route('/<team_name>/post', methods=['POST'])
+def update_posted_at(team_name):
+    data = request.json
+    if not data or not data.get("username"):
+        return jsonify({"error": "Username is required"}), 400
+
+    posted_time = datetime.now(timezone.utc)
+    username = data.get("username")
+    try:
+        userteam_model.update_posted_at(username, team_name, posted_time)
+        # return jsonify({
+        #     "message": f"{result["message"]}",
+        #     "posted_at": posted_time.isoformat()
+        # }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        teams = userteam_model.get_teams_by_user(username)
+        for team in teams:
+            score_service.calculate_team_score(team["team_name"])
+        top_teams = team_model.get_top_teams()
+        socketio.emit('update_leaderboard', top_teams)
+        return jsonify({"message": f"{username} updated post!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

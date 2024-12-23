@@ -1,27 +1,28 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from config.config import get_postgres_connection
 
 
 class TeamModel:
     def __init__(self, connection_func):
-        self.connection = connection_func
-        try:
-            with self.connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS teams (
-                        id SERIAL PRIMARY KEY,
-                        team_name VARCHAR(255) UNIQUE NOT NULL,
-                        score FLOAT DEFAULT 0
-                    );
-                    """)
-                conn.commit()
-        except Exception as e:
-            raise RuntimeError(f"Database error: {str(e)}")
+        self.connection_func = connection_func
+        # try:
+        #     with self.connection_func() as conn:
+        #         with conn.cursor() as cursor:
+        #             cursor.execute("""
+        #             CREATE TABLE IF NOT EXISTS teams (
+        #                 id SERIAL PRIMARY KEY,
+        #                 team_name VARCHAR(255) UNIQUE NOT NULL,
+        #                 score FLOAT DEFAULT 0
+        #             );
+        #             """)
+        #         conn.commit()
+        # except Exception as e:
+        #     raise RuntimeError(f"Database error: {str(e)}")
 
     def create_team(self, team_name):
         try:
-            with self.connection() as conn:
+            with self.connection_func() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         "INSERT INTO teams (team_name) VALUES (%s) RETURNING id;",
@@ -37,7 +38,7 @@ class TeamModel:
 
     def get_team_by_name(self, team_name):
         try:
-            with self.connection() as conn:
+            with self.connection_func() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute(
                         "SELECT * FROM teams WHERE team_name = %s;",
@@ -50,7 +51,7 @@ class TeamModel:
 
     def get_all_teams(self):
         try:
-            with self.connection() as conn:
+            with self.connection_func() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute("SELECT * FROM teams;")
                     teams = cursor.fetchall()
@@ -60,7 +61,7 @@ class TeamModel:
 
     def update_team_score(self, team_name, score):
         try:
-            with self.connection() as conn:
+            with self.connection_func() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         "UPDATE teams SET score = %s WHERE team_name = %s RETURNING id;",
@@ -73,3 +74,19 @@ class TeamModel:
                     return {"message": "Team score updated successfully", "team_id": updated_id[0]}
         except Exception as e:
             raise RuntimeError(f"Database error: {str(e)}")
+
+    def get_top_teams(self, limit=20):
+        try:
+            with self.connection_func() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute(
+                        "SELECT team_name, score FROM teams ORDER BY score DESC LIMIT %s;",
+                        (limit,)
+                    )
+                    top_teams = cursor.fetchall()
+                    return top_teams
+        except Exception as e:
+            raise RuntimeError(f"Database error: {str(e)}")
+
+
+team_model = TeamModel(get_postgres_connection)

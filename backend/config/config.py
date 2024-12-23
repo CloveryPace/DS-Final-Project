@@ -11,8 +11,6 @@ class Config:
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "12341234")
     POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
 
-    ACTIVITY_START_TIME = datetime(2024, 6, 1, 0, 0, 0)
-
 
 # 初始化連接池
 db_pool = pool.SimpleConnectionPool(
