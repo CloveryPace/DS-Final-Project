@@ -68,17 +68,17 @@ def add_member(team_name):
         teams = userteam_model.get_teams_by_user(username)
         for team in teams:
             score_service.calculate_team_score(team["team_name"])
+        return jsonify({"message": f"User '{data['username']}' added to team '{team_name}'"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    try:
-        top_teams = team_model.get_top_teams()
-        # socketio.emit('update_leaderboard', top_teams)
-        print(f"{top_teams} emitted")
-        return jsonify({"message": f"User '{data['username']}' added to team '{team_name}'"}), 200
-        # return jsonify(top_teams), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # try:
+    #     top_teams = team_model.get_top_teams()
+    #     # socketio.emit('update_leaderboard', top_teams)
+    #     print(f"{top_teams} emitted")
+    #     # return jsonify(top_teams), 200
+    # except Exception as e:
+    #     return jsonify({"error": str(e)}), 500
 
 
 @team_bp.route('/<team_name>/members', methods=['GET'])

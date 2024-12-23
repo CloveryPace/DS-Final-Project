@@ -5,7 +5,7 @@ from faker import Faker
 
 fake = Faker()
 
-BASE_URL = "http://localhost:8080"  # 定義基礎 URL
+BASE_URL = "https://flask-backend-1043469906200.asia-east1.run.app"  # 定義基礎 URL
 
 
 class CheckInUser(HttpUser):
@@ -49,9 +49,9 @@ class CheckInUser(HttpUser):
                 "team_name": team_name,
                 "username": self.username
             }
-            print(data)
-            response = self.client.post(f"{BASE_URL}/api/team", json=data)
-            print(response)
+            print("建群組 data ", data)
+            response = self.client.post(f"{BASE_URL}/api/team/", json=data)
+            print("建群組 res ", response.json())
             if response.status_code == 201:
                 self.joined_teams.append(team_name)
 
@@ -79,7 +79,6 @@ class CheckInUser(HttpUser):
             response = self.client.get(f"{BASE_URL}/api/team")
             teams = response.json().get('teams', [])
         except Exception as e:
-            print(response)
             print(f"Join team error:  {str(e)}")
         not_joined_team = [
             team for team in teams if team["team_name"] not in self.joined_teams]
