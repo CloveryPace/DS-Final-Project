@@ -56,14 +56,21 @@ class CheckInUser(HttpUser):
                 self.joined_teams.append(team_name)
 
     @task(1)  # 增加打卡行為的權重
-    def check_in(self):
+    def post(self):
         """模擬用戶打卡"""
         print(f"打卡的使用者: {self.username}")
-        response = self.client.post(f"{BASE_URL}/api/auth/post", json={
-            "username": self.username,
-        })
-        if response.status_code == 200:
-            print(f"{self.username} 成功打卡")
+        if self.joined_teams:
+            team_name = random.choice(self.joined_teams)
+            response = self.client.post(f"{BASE_URL}/api/team/{team_name}/post", json={
+                "username": self.username,
+                "posted_at": datetime.now().isoformat()
+            })
+            if response.status_code == 200:
+                # print(f"成功打卡: 群組 {team_id}")
+                pass
+            else:
+                print('fail', team_name, self.username)
+                print(f"打卡失敗: 群組 {response.json()}")
     '''
     @task(3)
     def join_team(self):
